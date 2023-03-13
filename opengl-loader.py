@@ -1,44 +1,25 @@
 # Imports
 import os
 import os.path
-import sys
 import requests
+import re
 
 # Functions
-def parse_function(line : str):
-    size_str = len(line)
-    mode = "PARAMS"
-    params_function = ""
-    name_function = ""
-    return_function = ""
-    for i in range(size_str - 1, -1, -1):
-        if(mode == "NAME" and line[i] == " "):
-            mode = "RETURN"
-        if mode == "PARAMS" and (i + 1) < size_str and line[i + 1] == "(" and line[i] == " ":
-            mode = "NAME"
-        if mode == "PARAMS":
-            params_function += line[i]
-        if mode == "NAME":
-            name_function += line[i]
-        if mode == "RETURN":
-            return_function += line[i]
-    return_function = return_function[::-1].replace("GLAPI", "").replace("APIENTRY", "").removeprefix(" ").removesuffix(" ")
-    name_function = name_function[::-1].removesuffix(" ")
-    params_function = params_function[::-1]
-
-    return (return_function, name_function, params_function, "PFN" + name_function.upper() + "PROC", "impl_PFN" + name_function.upper() + "PROC")
-
 def download(url : str, filename : str):
-    request = requests.get(url, allow_redirects=True)
-    w_file = open(filename, "wb").write(request.content)
+    if os.path.exists("includes/" + filename) == False:
+        request = requests.get(url, allow_redirects=True)
+        w_file = open(filename, "wb")
+        w_file.write(request.content)
     return open(filename, "r")
 
 def get_all_gl_functions(lines : list):
     functions = []
     for line in lines:
         if "GLAPI" in line and "#ifndef" not in line and "#define" not in line:
-            return_type, function_name, function_params, function_pointer_name, function_implementation = parse_function(line.removesuffix(";\n"))
-            functions.append((return_type, function_name, function_params, function_pointer_name, function_implementation))
+            match_function = re.findall("APIENTRY [\w]+", line)
+            if(len(match_function) > 0):
+                function_name = match_function[0].removeprefix("APIENTRY ")
+                functions.append(function_name)
     return functions
 
 def create_header_file(functions : list):
@@ -53,15 +34,16 @@ def create_header_file(functions : list):
     header_file.write("#include \"glcorearb.h\"\n\n")
     header_file.write("class GLFunctionLoader {\n\n")
     header_file.write("public:\n\n")
-    # Add all the functions pointers
+    # Add function pointers
+    header_file.write("// Function pointers\n\n")
     for function in functions:
-        return_type, function_name, function_params, function_pointer_name, function_implementation = function
-        function_var = "inline static " + return_type + "(*" + function_name + "_ptr" + ")" + function_params + " = nullptr;"
-        function_def_line = "#define " + function_name + " GLFunctionLoader::" + function_name + "_ptr"
-        header_file.write(function_var + "\n")
-        header_file.write(function_def_line + "\n\n")
+        header_file.write("inline static PFN" + function.upper() + "PROC " + function + " = nullptr;\n")
+    # Add function defines
+    header_file.write("// Function defines\n\n")
+    for function in functions:
+        header_file.write("#define " + function + " GLFunctionLoader::" + function + "\n")
     # Add the OpenGL function loader
-    header_file.write("static void * Load_Function(const char * name)\n")
+    header_file.write("\nstatic void * Load_Function(const char * name)\n")
     header_file.write("{\n")
     header_file.write("\tvoid * result = nullptr;\n\n")
     header_file.write("\t#if defined(_WIN32) or defined(_WIN64)\n")
@@ -74,25 +56,23 @@ def create_header_file(functions : list):
     header_file.write("\t}\n")
     header_file.write("\t#endif\n\n")
     header_file.write("\treturn result;\n")
-    header_file.write("}\n")
+    header_file.write("}\n\n")
     # Add the OpenGL loader
     header_file.write("static unsigned long Initizalize()\n")
     header_file.write("{\n")
     header_file.write("\tunsigned long count = 0;\n\n")
     for function in functions:
-        return_type, function_name, function_params, function_pointer_name, function_implementation = function
-        function_load_line = function_name + "_ptr = (" + function_pointer_name + ") Load_Function(\"" + function_name + "\");"
+        function_load_line = function + " = (PFN" + function.upper() + "PROC) Load_Function(\"" + function + "\");"
         header_file.write("\t" + function_load_line + " \n")
-        header_file.write("\tif(" + function_name + "_ptr != nullptr)" + " count++;\n")
-    header_file.write("\n\treturn count; \n}\n")
+        header_file.write("\tif(" + function + " != nullptr)" + " count++;\n")
+    header_file.write("\n\treturn count; \n}\n\n")
     # End of header
     header_file.write("};\n\n")
     header_file.write("#endif")
     header_file.close()
 
 # Main
-if __name__ == '__main__':
-
+if __name__ == '__main__':  
     print("Starting ...")
     
     # Check if the "includes" directory exist
