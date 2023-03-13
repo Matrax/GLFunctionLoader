@@ -1,7 +1,7 @@
 #ifndef GL_FUNCTION_LOADER_HPP
 #define GL_FUNCTION_LOADER_HPP
 
-#if defined(_WIN32) or defined(_WIN64)
+#if defined(_WIN32) || defined(_WIN64)
 #include <Windows.h>
 #endif
 
@@ -2577,7 +2577,7 @@ static void * Load_Function(const char * name)
 {
 	void * result = nullptr;
 
-	#if defined(_WIN32) or defined(_WIN64)
+	#if defined(_WIN32) || defined(_WIN64)
 	result = (void*) wglGetProcAddress(name);
 	if(result == nullptr)
 	{
