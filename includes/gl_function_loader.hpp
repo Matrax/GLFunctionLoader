@@ -8,9 +8,7 @@
 #include "KHR/khrplatform.h"
 #include "glcorearb.h"
 
-class GLFunctionLoader {
-
-public:
+namespace GLFunctionLoader {
 
 // Function pointers
 
@@ -2590,7 +2588,7 @@ static void * Load_Function(const char * name)
 	return result;
 }
 
-static unsigned long Initizalize()
+static unsigned long Initialize()
 {
 	unsigned long count = 0;
 
@@ -5154,6 +5152,6 @@ static unsigned long Initizalize()
 	return count; 
 }
 
-};
+}
 
 #endif

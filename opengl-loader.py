@@ -32,16 +32,11 @@ def create_header_file(functions : list):
     header_file.write("#endif\n\n")
     header_file.write("#include \"KHR/khrplatform.h\"\n")
     header_file.write("#include \"glcorearb.h\"\n\n")
-    header_file.write("class GLFunctionLoader {\n\n")
-    header_file.write("public:\n\n")
+    header_file.write("namespace GLFunctionLoader {\n\n")
     # Add function pointers
-    header_file.write("// Function pointers\n\n")
+    header_file.write("// OpenGL Functions signature\n\n")
     for function in functions:
         header_file.write("inline static PFN" + function.upper() + "PROC " + function + " = nullptr;\n")
-    # Add function defines
-    header_file.write("// Function defines\n\n")
-    for function in functions:
-        header_file.write("#define " + function + " GLFunctionLoader::" + function + "\n")
     # Add the OpenGL function loader
     header_file.write("\nstatic void * Load_Function(const char * name)\n")
     header_file.write("{\n")
@@ -58,7 +53,7 @@ def create_header_file(functions : list):
     header_file.write("\treturn result;\n")
     header_file.write("}\n\n")
     # Add the OpenGL loader
-    header_file.write("static unsigned long Initizalize()\n")
+    header_file.write("static unsigned long Initialize()\n")
     header_file.write("{\n")
     header_file.write("\tunsigned long count = 0;\n\n")
     for function in functions:
@@ -67,8 +62,12 @@ def create_header_file(functions : list):
         header_file.write("\tif(" + function + " != nullptr)" + " count++;\n")
     header_file.write("\n\treturn count; \n}\n\n")
     # End of header
-    header_file.write("};\n\n")
-    header_file.write("#endif")
+    header_file.write("}\n\n")
+    # Add function defines
+    header_file.write("// Defines\n\n")
+    for function in functions:
+        header_file.write("#define " + function + " GLFunctionLoader::" + function + "\n")
+    header_file.write("\n#endif")
     header_file.close()
 
 # Main
