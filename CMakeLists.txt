@@ -1,9 +1,6 @@
 #CMake version
 cmake_minimum_required(VERSION 3.20)
 
-# options
-option(BUILD_TESTS "Build the tests" OFF)
-
 # Set CMake properties
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -21,4 +18,6 @@ project(${GLFL_LIB_NAME}
 
 # Add the interface library
 add_library(${GLFL_LIB_NAME} INTERFACE)
+
+# Add includes
 target_include_directories(${GLFL_LIB_NAME} INTERFACE ${GLFL_INCLUDES_DIR})
