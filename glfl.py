@@ -149,7 +149,8 @@ if __name__ == '__main__':
 
     else:
         
-        print("GLFunctionLoader (GLFL) download for you the OpenGL header you want from the Khronos registry and make a C++ functions loader from it")
+        print("GLFunctionLoader (GLFL) download for you the OpenGL header you want from the Khronos registry and make a C++ functions loader from it.")
+        print("All the headers will be downloaded in a \"includes\" directory inside the same directory where you called GLFL.")
         print("Headers : [glcorearb, glext]")
         print("Usage: glfl [header]")
         print("Example: glfl glcorearb")
