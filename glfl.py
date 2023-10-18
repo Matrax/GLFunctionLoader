@@ -49,8 +49,8 @@ def create_header_file(functions : list, loader_file_name : str, gl_header_file_
     header_file.write("#if defined(_WIN32) || defined(_WIN64)\n")
     header_file.write("#include <Windows.h>\n")
     header_file.write("#endif\n\n")
-    header_file.write("#include \"KHR/khrplatform.h\"\n")
-    header_file.write("#include \"" + gl_header_file_name + "\"\n\n")
+    header_file.write("#include <KHR/khrplatform.h>\n")
+    header_file.write("#include <" + gl_header_file_name + ">\n\n")
     header_file.write("namespace " + namespace + " {\n\n")
     # Add function pointers
     header_file.write("// OpenGL Functions signature\n\n")
@@ -85,7 +85,7 @@ def create_header_file(functions : list, loader_file_name : str, gl_header_file_
     # Add function defines
     header_file.write("// Defines\n\n")
     for function in functions:
-        header_file.write("#define " + function + " GLFunctionLoader::" + function + "\n")
+        header_file.write("#define " + function + " " + namespace + "::" + function + "\n")
     header_file.close()
 
 ###################################
