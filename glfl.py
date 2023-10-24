@@ -16,7 +16,7 @@ import sys
 #                                 #
 ###################################
 def download(url : str, filename : str):
-    if os.path.exists("includes/" + filename) == False:
+    if os.path.exists(filename) == False:
         request = requests.get(url, allow_redirects=True)
         w_file = open(filename, "wb")
         w_file.write(request.content)
@@ -44,7 +44,7 @@ def get_all_gl_functions(lines : list):
 ###################################
 def create_header_file(functions : list, loader_file_name : str, gl_header_file_name : str, namespace : str):
     # Create the header-only file
-    header_file = open("includes/" + loader_file_name, "w")
+    header_file = open("includes/glfl/" + loader_file_name, "w")
     header_file.write("#pragma once\n\n")
     header_file.write("#if defined(_WIN32) || defined(_WIN64)\n")
     header_file.write("#include <Windows.h>\n")
@@ -55,9 +55,9 @@ def create_header_file(functions : list, loader_file_name : str, gl_header_file_
     # Add function pointers
     header_file.write("// OpenGL Functions signature\n\n")
     for function in functions:
-        header_file.write("inline static PFN" + function.upper() + "PROC " + function + " = nullptr;\n")
+        header_file.write("inline PFN" + function.upper() + "PROC " + function + " = nullptr;\n")
     # Add the OpenGL function loader
-    header_file.write("\nstatic void * Load_Function(const char * name)\n")
+    header_file.write("\ninline void * Load_Function(const char * name)\n")
     header_file.write("{\n")
     header_file.write("\tvoid * result = nullptr;\n\n")
     header_file.write("\t#if defined(_WIN32) || defined(_WIN64)\n")
@@ -72,7 +72,7 @@ def create_header_file(functions : list, loader_file_name : str, gl_header_file_
     header_file.write("\treturn result;\n")
     header_file.write("}\n\n")
     # Add the OpenGL loader
-    header_file.write("static unsigned long Initialize()\n")
+    header_file.write("inline unsigned long Initialize()\n")
     header_file.write("{\n")
     header_file.write("\tunsigned long count = 0;\n\n")
     for function in functions:
@@ -99,10 +99,13 @@ if __name__ == '__main__':
 
         # Start
         print("===================")
-        # Check if the "includes" directory exist
+        # Check if the "glfl" directory exist
         if os.path.exists("includes") == False:
             os.mkdir("includes")
-        # Check if the "includes/KHR" directory exist
+        # Check if the "glfl" directory exist
+        if os.path.exists("includes/glfl") == False:
+            os.mkdir("includes/glfl")
+        # Check if the "glfl/KHR" directory exist
         if os.path.exists("includes/KHR") == False:
             os.mkdir("includes/KHR")
         # Download the khrplatform.h from Khronos
@@ -150,7 +153,7 @@ if __name__ == '__main__':
     else:
         
         print("GLFunctionLoader (GLFL) download for you the OpenGL header you want from the Khronos registry and make a C++ functions loader from it.")
-        print("All the headers will be downloaded in a \"includes\" directory inside the same directory where you called GLFL.")
+        print("All the headers will be downloaded in a \"glfl\" directory inside the same directory where you called GLFL.")
         print("Headers : [glcorearb, glext]")
         print("Usage: glfl [header]")
         print("Example: glfl glcorearb")
