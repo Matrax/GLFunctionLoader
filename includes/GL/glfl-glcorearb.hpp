@@ -1,14 +1,17 @@
+// FILE WRITTED WITH GLFL (GL_FUNCTION_LOADER)
 #pragma once
 
+//OS INCLUDES
 #if defined(_WIN32) || defined(_WIN64)
-#include <Windows.h>
+	#define WIN32_LEAN_AND_MEAN 1
+	#include <Windows.h>
 #endif
 
+//KHRONOS INCLUDES
 #include <KHR/khrplatform.h>
-#include <glcorearb.h>
+#include <GL/glcorearb.h>
 
 // OpenGL Functions signature
-
 inline PFNGLCULLFACEPROC glCullFace = nullptr;
 inline PFNGLFRONTFACEPROC glFrontFace = nullptr;
 inline PFNGLHINTPROC glHint = nullptr;
@@ -1292,14 +1295,15 @@ inline void * GLFL_GLCOREARB_Load_Function(const char * name)
 {
 	void * result = nullptr;
 
+	//WIN32 LOADING
 	#if defined(_WIN32) || defined(_WIN64)
-	result = (void*) wglGetProcAddress(name);
-	if(result == nullptr)
-	{
-		HMODULE module = LoadLibraryA("opengl32.dll");
-		if(module != nullptr)
-			result = (void *) GetProcAddress(module, name);
-	}
+		result = (void*) wglGetProcAddress(name);
+		if(result == nullptr)
+		{
+			HMODULE module = LoadLibraryA("opengl32.dll");
+			if(module != nullptr)
+				result = (void *) GetProcAddress(module, name);
+		}
 	#endif
 
 	return result;
